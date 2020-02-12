@@ -1,644 +1,165 @@
 <?php
 /**
- * Twenty Seventeen functions and definitions
+ * Isoko functions and definitions
  *
  * @link https://developer.wordpress.org/themes/basics/theme-functions/
  *
  * @package WordPress
- * @subpackage Twenty_Seventeen
+ * @subpackage Isoko_Brundi
  * @since 1.0
  */
 
+
 /**
- * Twenty Seventeen only works in WordPress 4.7 or later.
+ * Isoko only works in WordPress 4.7 or later.
  */
-if ( version_compare( $GLOBALS['wp_version'], '4.7-alpha', '<' ) ) {
-	require get_template_directory() . '/inc/back-compat.php';
-	return;
+add_theme_support( 'post-thumbnails');
+
+define( '_DEVELOPER_USER_ROLE',  'administrator');
+
+// set for sidebar general survey id
+if( $_SERVER['SERVER_NAME'] == 'localhost' ){
+		define( 'SIDEBAR_GEN_SVY_ID',  924478511); // localhost
+	}else{
+		define( 'SIDEBAR_GEN_SVY_ID',  207192866); // staging or live
 }
 
-/**
- * Sets up theme defaults and registers support for various WordPress features.
- *
- * Note that this function is hooked into the after_setup_theme hook, which
- * runs before the init hook. The init hook is too late for some features, such
- * as indicating support for post thumbnails.
- */
-function twentyseventeen_setup() {
-	/*
-	 * Make theme available for translation.
-	 * Translations can be filed at WordPress.org. See: https://translate.wordpress.org/projects/wp-themes/twentyseventeen
-	 * If you're building a theme based on Twenty Seventeen, use a find and replace
-	 * to change 'twentyseventeen' to the name of your theme in all the template files.
-	 */
-	load_theme_textdomain( 'twentyseventeen' );
 
-	// Add default posts and comments RSS feed links to head.
-	add_theme_support( 'automatic-feed-links' );
 
-	/*
-	 * Let WordPress manage the document title.
-	 * By adding theme support, we declare that this theme does not use a
-	 * hard-coded <title> tag in the document head, and expect WordPress to
-	 * provide it for us.
-	 */
-	add_theme_support( 'title-tag' );
-
-	/*
-	 * Enable support for Post Thumbnails on posts and pages.
-	 *
-	 * @link https://developer.wordpress.org/themes/functionality/featured-images-post-thumbnails/
-	 */
-	add_theme_support( 'post-thumbnails' );
-
-	add_image_size( 'twentyseventeen-featured-image', 2000, 1200, true );
-
-	add_image_size( 'twentyseventeen-thumbnail-avatar', 100, 100, true );
-
-	// Set the default content width.
-	$GLOBALS['content_width'] = 525;
-
-	// This theme uses wp_nav_menu() in two locations.
-	register_nav_menus(
-		array(
-			'top'    => __( 'Top Menu', 'twentyseventeen' ),
-			'social' => __( 'Social Links Menu', 'twentyseventeen' ),
+ 
+function add_theme_scripts() {
+ 
+ //css
+  
+  //wp_enqueue_style( 'raleway-font', 'https://fonts.googleapis.com/css?family=Raleway:300,400,400i,700,800|Varela+Round');
+  wp_enqueue_style( 'bootstrap-min', get_template_directory_uri() . '/css/bootstrap.min.css');
+  wp_enqueue_style( 'font-awesome-min', get_template_directory_uri() . '/css/font-awesome.min.css');
+  wp_enqueue_style( 'icomoon', get_template_directory_uri() . '/css/icomoon.css');
+  wp_enqueue_style( 'style', get_stylesheet_uri() );
+  wp_enqueue_style( 'jquery-bxslider', get_template_directory_uri() . '/css/jquery.bxslider.css');
+  wp_enqueue_style( 'responsive', get_template_directory_uri() . '/css/responsive.css');
+  wp_enqueue_style( 'print', get_template_directory_uri() . '/css/print.css');
+  
+ 
+ //js
+  //wp_enqueue_script( 'jquery-min', get_template_directory_uri() . '/js/jquery-3.2.1.min.js');
+  wp_enqueue_script( 'bootstrap.min', get_template_directory_uri() . '/js/bootstrap.min.js', array( 'jquery' ));
+  wp_enqueue_script( 'jquery-bxslider', get_template_directory_uri() . '/js/jquery.bxslider.js', array( 'jquery' ));
+  wp_enqueue_script( 'custom', get_template_directory_uri() . '/js/custom.js', array( 'jquery' ));
+  
+  wp_localize_script('custom', 'provience_script_vars', array(
+			'selectProvience' => __('--- Votre Province ---', 'contact_us')
 		)
 	);
 
-	/*
-	 * Switch default core markup for search form, comment form, and comments
-	 * to output valid HTML5.
-	 */
-	add_theme_support(
-		'html5',
-		array(
-			'comment-form',
-			'comment-list',
-			'gallery',
-			'caption',
-			'script',
-			'style',
-		)
-	);
-
-	/*
-	 * Enable support for Post Formats.
-	 *
-	 * See: https://wordpress.org/support/article/post-formats/
-	 */
-	add_theme_support(
-		'post-formats',
-		array(
-			'aside',
-			'image',
-			'video',
-			'quote',
-			'link',
-			'gallery',
-			'audio',
-		)
-	);
-
-	// Add theme support for Custom Logo.
-	add_theme_support(
-		'custom-logo',
-		array(
-			'width'      => 250,
-			'height'     => 250,
-			'flex-width' => true,
-		)
-	);
-
-	// Add theme support for selective refresh for widgets.
-	add_theme_support( 'customize-selective-refresh-widgets' );
-
-	/*
-	 * This theme styles the visual editor to resemble the theme style,
-	 * specifically font, colors, and column width.
-	  */
-	add_editor_style( array( 'assets/css/editor-style.css', twentyseventeen_fonts_url() ) );
-
-	// Load regular editor styles into the new block-based editor.
-	add_theme_support( 'editor-styles' );
-
-	// Load default block styles.
-	add_theme_support( 'wp-block-styles' );
-
-	// Add support for responsive embeds.
-	add_theme_support( 'responsive-embeds' );
-
-	// Define and register starter content to showcase the theme on new sites.
-	$starter_content = array(
-		'widgets'     => array(
-			// Place three core-defined widgets in the sidebar area.
-			'sidebar-1' => array(
-				'text_business_info',
-				'search',
-				'text_about',
-			),
-
-			// Add the core-defined business info widget to the footer 1 area.
-			'sidebar-2' => array(
-				'text_business_info',
-			),
-
-			// Put two core-defined widgets in the footer 2 area.
-			'sidebar-3' => array(
-				'text_about',
-				'search',
-			),
-		),
-
-		// Specify the core-defined pages to create and add custom thumbnails to some of them.
-		'posts'       => array(
-			'home',
-			'about'            => array(
-				'thumbnail' => '{{image-sandwich}}',
-			),
-			'contact'          => array(
-				'thumbnail' => '{{image-espresso}}',
-			),
-			'blog'             => array(
-				'thumbnail' => '{{image-coffee}}',
-			),
-			'homepage-section' => array(
-				'thumbnail' => '{{image-espresso}}',
-			),
-		),
-
-		// Create the custom image attachments used as post thumbnails for pages.
-		'attachments' => array(
-			'image-espresso' => array(
-				'post_title' => _x( 'Espresso', 'Theme starter content', 'twentyseventeen' ),
-				'file'       => 'assets/images/espresso.jpg', // URL relative to the template directory.
-			),
-			'image-sandwich' => array(
-				'post_title' => _x( 'Sandwich', 'Theme starter content', 'twentyseventeen' ),
-				'file'       => 'assets/images/sandwich.jpg',
-			),
-			'image-coffee'   => array(
-				'post_title' => _x( 'Coffee', 'Theme starter content', 'twentyseventeen' ),
-				'file'       => 'assets/images/coffee.jpg',
-			),
-		),
-
-		// Default to a static front page and assign the front and posts pages.
-		'options'     => array(
-			'show_on_front'  => 'page',
-			'page_on_front'  => '{{home}}',
-			'page_for_posts' => '{{blog}}',
-		),
-
-		// Set the front page section theme mods to the IDs of the core-registered pages.
-		'theme_mods'  => array(
-			'panel_1' => '{{homepage-section}}',
-			'panel_2' => '{{about}}',
-			'panel_3' => '{{blog}}',
-			'panel_4' => '{{contact}}',
-		),
-
-		// Set up nav menus for each of the two areas registered in the theme.
-		'nav_menus'   => array(
-			// Assign a menu to the "top" location.
-			'top'    => array(
-				'name'  => __( 'Top Menu', 'twentyseventeen' ),
-				'items' => array(
-					'link_home', // Note that the core "home" page is actually a link in case a static front page is not used.
-					'page_about',
-					'page_blog',
-					'page_contact',
-				),
-			),
-
-			// Assign a menu to the "social" location.
-			'social' => array(
-				'name'  => __( 'Social Links Menu', 'twentyseventeen' ),
-				'items' => array(
-					'link_yelp',
-					'link_facebook',
-					'link_twitter',
-					'link_instagram',
-					'link_email',
-				),
-			),
-		),
-	);
-
-	/**
-	 * Filters Twenty Seventeen array of starter content.
-	 *
-	 * @since Twenty Seventeen 1.1
-	 *
-	 * @param array $starter_content Array of starter content.
-	 */
-	$starter_content = apply_filters( 'twentyseventeen_starter_content', $starter_content );
-
-	add_theme_support( 'starter-content', $starter_content );
+ 
 }
-add_action( 'after_setup_theme', 'twentyseventeen_setup' );
+add_action( 'wp_enqueue_scripts', 'add_theme_scripts' );
 
-/**
- * Set the content width in pixels, based on the theme's design and stylesheet.
- *
- * Priority 0 to make it available to lower priority callbacks.
- *
- * @global int $content_width
- */
-function twentyseventeen_content_width() {
-
-	$content_width = $GLOBALS['content_width'];
-
-	// Get layout.
-	$page_layout = get_theme_mod( 'page_layout' );
-
-	// Check if layout is one column.
-	if ( 'one-column' === $page_layout ) {
-		if ( twentyseventeen_is_frontpage() ) {
-			$content_width = 644;
-		} elseif ( is_page() ) {
-			$content_width = 740;
-		}
-	}
-
-	// Check if is single post and there is no sidebar.
-	if ( is_single() && ! is_active_sidebar( 'sidebar-1' ) ) {
-		$content_width = 740;
-	}
-
-	/**
-	 * Filter Twenty Seventeen content width of the theme.
-	 *
-	 * @since Twenty Seventeen 1.0
-	 *
-	 * @param int $content_width Content width in pixels.
-	 */
-	$GLOBALS['content_width'] = apply_filters( 'twentyseventeen_content_width', $content_width );
-}
-add_action( 'template_redirect', 'twentyseventeen_content_width', 0 );
-
-/**
- * Register custom fonts.
- */
-function twentyseventeen_fonts_url() {
-	$fonts_url = '';
-
-	/*
-	 * translators: If there are characters in your language that are not supported
-	 * by Libre Franklin, translate this to 'off'. Do not translate into your own language.
-	 */
-	$libre_franklin = _x( 'on', 'Libre Franklin font: on or off', 'twentyseventeen' );
-
-	if ( 'off' !== $libre_franklin ) {
-		$font_families = array();
-
-		$font_families[] = 'Libre Franklin:300,300i,400,400i,600,600i,800,800i';
-
-		$query_args = array(
-			'family'  => urlencode( implode( '|', $font_families ) ),
-			'subset'  => urlencode( 'latin,latin-ext' ),
-			'display' => urlencode( 'fallback' ),
-		);
-
-		$fonts_url = add_query_arg( $query_args, 'https://fonts.googleapis.com/css' );
-	}
-
-	return esc_url_raw( $fonts_url );
+/*
+* Add JS to admin panel
+*/
+function scripts_for_admin() {
+    wp_enqueue_script( 'custom-admin', get_template_directory_uri() . '/js/custom-admin.js', array( 'jquery' ));
 }
 
-/**
- * Add preconnect for Google Fonts.
- *
- * @since Twenty Seventeen 1.0
- *
- * @param array  $urls           URLs to print for resource hints.
- * @param string $relation_type  The relation type the URLs are printed.
- * @return array $urls           URLs to print for resource hints.
- */
-function twentyseventeen_resource_hints( $urls, $relation_type ) {
-	if ( wp_style_is( 'twentyseventeen-fonts', 'queue' ) && 'preconnect' === $relation_type ) {
-		$urls[] = array(
-			'href' => 'https://fonts.gstatic.com',
-			'crossorigin',
-		);
-	}
+add_action('admin_enqueue_scripts', 'scripts_for_admin');
 
-	return $urls;
-}
-add_filter( 'wp_resource_hints', 'twentyseventeen_resource_hints', 10, 2 );
 
 /**
  * Register widget area.
  *
  * @link https://developer.wordpress.org/themes/functionality/sidebars/#registering-a-sidebar
  */
-function twentyseventeen_widgets_init() {
-	register_sidebar(
-		array(
-			'name'          => __( 'Blog Sidebar', 'twentyseventeen' ),
-			'id'            => 'sidebar-1',
-			'description'   => __( 'Add widgets here to appear in your sidebar on blog posts and archive pages.', 'twentyseventeen' ),
-			'before_widget' => '<section id="%1$s" class="widget %2$s">',
-			'after_widget'  => '</section>',
-			'before_title'  => '<h2 class="widget-title">',
-			'after_title'   => '</h2>',
-		)
-	);
+function burundi_widgets_init() {
+  register_sidebar( array(
+  'name'          => __( 'Useful Links', 'burundi' ),
+  'id'            => 'useful-links',
+  'description'   => __( 'Add widgets here to appear in your footer.', 'burundi' ),
+  'before_widget' => '',
+  'after_widget'  => '',
+  'before_title'  => '<h4>',
+  'after_title'   => '</h4>',
+) );
+register_sidebar( array(
+  'name'          => __( 'Visitors Count', 'burundi' ),
+  'id'            => 'visitors-count-total',
+  'description'   => __( 'Add widgets here to appear in your footer.', 'burundi' ),
+  'before_widget' => '<section id="%1$s" class="widget %2$s">',
+  'after_widget'  => '</section>',
+  'before_title'  => '<h2 class="widget-title">',
+  'after_title'   => '</h2>',
+) );
 
-	register_sidebar(
-		array(
-			'name'          => __( 'Footer 1', 'twentyseventeen' ),
-			'id'            => 'sidebar-2',
-			'description'   => __( 'Add widgets here to appear in your footer.', 'twentyseventeen' ),
-			'before_widget' => '<section id="%1$s" class="widget %2$s">',
-			'after_widget'  => '</section>',
-			'before_title'  => '<h2 class="widget-title">',
-			'after_title'   => '</h2>',
-		)
-	);
 
-	register_sidebar(
-		array(
-			'name'          => __( 'Footer 2', 'twentyseventeen' ),
-			'id'            => 'sidebar-3',
-			'description'   => __( 'Add widgets here to appear in your footer.', 'twentyseventeen' ),
-			'before_widget' => '<section id="%1$s" class="widget %2$s">',
-			'after_widget'  => '</section>',
-			'before_title'  => '<h2 class="widget-title">',
-			'after_title'   => '</h2>',
-		)
-	);
+register_sidebar( array(
+  'name'          => __( 'Footer Navigation', 'burundi' ),
+  'id'            => 'navigation-total_footer',
+  'description'   => __( 'Add widgets here to appear in your footer navigation.', 'burundi' ),
+  'before_widget' => '',
+  'after_widget'  => '',
+  'before_title'  => '<h4>',
+  'after_title'   => '</h4>',
+) );
+
+register_sidebar( array(
+  'name'          => __( 'Footer Copyright', 'burundi' ),
+  'id'            => 'copyright-total_footer',
+  'description'   => __( 'Add widgets here to appear in your footer navigation.', 'burundi' ),
+  'before_widget' => '',
+  'after_widget'  => '',
+  'before_title'  => '',
+  'after_title'   => '',
+) );
+
+register_sidebar( array(
+  'name'          => __( 'Filter page', 'burundi' ),
+  'id'            => 'filter_page_demo',
+  'description'   => __( 'Add widgets here to appear in your footer navigation.', 'burundi' ),
+  'before_widget' => '',
+  'after_widget'  => '',
+  'before_title'  => '',
+  'after_title'   => '',
+) );
+
+
+
+
+register_sidebar( array(
+  'name'          => __( 'Language Switcher', 'isoko' ),
+  'id'            => 'language-switcher',
+  'description'   => __( 'Add widgets here to appear in your header.', 'burundi' ),
+  'before_widget' => '<section id="%1$s" class="widget %2$s">',
+  'after_widget'  => '</section>',
+  'before_title'  => '<h2 class="widget-title">',
+  'after_title'   => '</h2>',
+) );
+
+register_sidebar( array(
+  'name'          => __( 'Message For Slide', 'burundi' ),
+  'id'            => 'message-slide',
+  'description'   => __( 'Add widgets here to appear in your home page.', 'burundi' ),
+  'before_widget' => '',
+  'after_widget'  => '',
+  'before_title'  => '',
+  'after_title'   => '',
+) );
 }
-add_action( 'widgets_init', 'twentyseventeen_widgets_init' );
-
-/**
- * Replaces "[...]" (appended to automatically generated excerpts) with ... and
- * a 'Continue reading' link.
- *
- * @since Twenty Seventeen 1.0
- *
- * @param string $link Link to single post/page.
- * @return string 'Continue reading' link prepended with an ellipsis.
- */
-function twentyseventeen_excerpt_more( $link ) {
-	if ( is_admin() ) {
-		return $link;
-	}
-
-	$link = sprintf(
-		'<p class="link-more"><a href="%1$s" class="more-link">%2$s</a></p>',
-		esc_url( get_permalink( get_the_ID() ) ),
-		/* translators: %s: Post title. */
-		sprintf( __( 'Continue reading<span class="screen-reader-text"> "%s"</span>', 'twentyseventeen' ), get_the_title( get_the_ID() ) )
-	);
-	return ' &hellip; ' . $link;
-}
-add_filter( 'excerpt_more', 'twentyseventeen_excerpt_more' );
-
-/**
- * Handles JavaScript detection.
- *
- * Adds a `js` class to the root `<html>` element when JavaScript is detected.
- *
- * @since Twenty Seventeen 1.0
- */
-function twentyseventeen_javascript_detection() {
-	echo "<script>(function(html){html.className = html.className.replace(/\bno-js\b/,'js')})(document.documentElement);</script>\n";
-}
-add_action( 'wp_head', 'twentyseventeen_javascript_detection', 0 );
-
-/**
- * Add a pingback url auto-discovery header for singularly identifiable articles.
- */
-function twentyseventeen_pingback_header() {
-	if ( is_singular() && pings_open() ) {
-		printf( '<link rel="pingback" href="%s">' . "\n", esc_url( get_bloginfo( 'pingback_url' ) ) );
-	}
-}
-add_action( 'wp_head', 'twentyseventeen_pingback_header' );
-
-/**
- * Display custom color CSS.
- */
-function twentyseventeen_colors_css_wrap() {
-	if ( 'custom' !== get_theme_mod( 'colorscheme' ) && ! is_customize_preview() ) {
-		return;
-	}
-
-	require_once( get_parent_theme_file_path( '/inc/color-patterns.php' ) );
-	$hue = absint( get_theme_mod( 'colorscheme_hue', 250 ) );
-
-	$customize_preview_data_hue = '';
-	if ( is_customize_preview() ) {
-		$customize_preview_data_hue = 'data-hue="' . $hue . '"';
-	}
-	?>
-	<style type="text/css" id="custom-theme-colors" <?php echo $customize_preview_data_hue; ?>>
-		<?php echo twentyseventeen_custom_colors_css(); ?>
-	</style>
-	<?php
-}
-add_action( 'wp_head', 'twentyseventeen_colors_css_wrap' );
-
-/**
- * Enqueues scripts and styles.
- */
-function twentyseventeen_scripts() {
-	// Add custom fonts, used in the main stylesheet.
-	wp_enqueue_style( 'twentyseventeen-fonts', twentyseventeen_fonts_url(), array(), null );
-
-	// Theme stylesheet.
-	wp_enqueue_style( 'twentyseventeen-style', get_stylesheet_uri(), array(), '20190507' );
-
-	// Theme block stylesheet.
-	wp_enqueue_style( 'twentyseventeen-block-style', get_theme_file_uri( '/assets/css/blocks.css' ), array( 'twentyseventeen-style' ), '20190105' );
-
-	// Load the dark colorscheme.
-	if ( 'dark' === get_theme_mod( 'colorscheme', 'light' ) || is_customize_preview() ) {
-		wp_enqueue_style( 'twentyseventeen-colors-dark', get_theme_file_uri( '/assets/css/colors-dark.css' ), array( 'twentyseventeen-style' ), '20190408' );
-	}
-
-	// Load the Internet Explorer 9 specific stylesheet, to fix display issues in the Customizer.
-	if ( is_customize_preview() ) {
-		wp_enqueue_style( 'twentyseventeen-ie9', get_theme_file_uri( '/assets/css/ie9.css' ), array( 'twentyseventeen-style' ), '20161202' );
-		wp_style_add_data( 'twentyseventeen-ie9', 'conditional', 'IE 9' );
-	}
-
-	// Load the Internet Explorer 8 specific stylesheet.
-	wp_enqueue_style( 'twentyseventeen-ie8', get_theme_file_uri( '/assets/css/ie8.css' ), array( 'twentyseventeen-style' ), '20161202' );
-	wp_style_add_data( 'twentyseventeen-ie8', 'conditional', 'lt IE 9' );
-
-	// Load the html5 shiv.
-	wp_enqueue_script( 'html5', get_theme_file_uri( '/assets/js/html5.js' ), array(), '20161020' );
-	wp_script_add_data( 'html5', 'conditional', 'lt IE 9' );
-
-	wp_enqueue_script( 'twentyseventeen-skip-link-focus-fix', get_theme_file_uri( '/assets/js/skip-link-focus-fix.js' ), array(), '20161114', true );
-
-	$twentyseventeen_l10n = array(
-		'quote' => twentyseventeen_get_svg( array( 'icon' => 'quote-right' ) ),
-	);
-
-	if ( has_nav_menu( 'top' ) ) {
-		wp_enqueue_script( 'twentyseventeen-navigation', get_theme_file_uri( '/assets/js/navigation.js' ), array( 'jquery' ), '20161203', true );
-		$twentyseventeen_l10n['expand']   = __( 'Expand child menu', 'twentyseventeen' );
-		$twentyseventeen_l10n['collapse'] = __( 'Collapse child menu', 'twentyseventeen' );
-		$twentyseventeen_l10n['icon']     = twentyseventeen_get_svg(
-			array(
-				'icon'     => 'angle-down',
-				'fallback' => true,
-			)
-		);
-	}
-
-	wp_enqueue_script( 'twentyseventeen-global', get_theme_file_uri( '/assets/js/global.js' ), array( 'jquery' ), '20190121', true );
-
-	wp_enqueue_script( 'jquery-scrollto', get_theme_file_uri( '/assets/js/jquery.scrollTo.js' ), array( 'jquery' ), '2.1.2', true );
-
-	wp_localize_script( 'twentyseventeen-skip-link-focus-fix', 'twentyseventeenScreenReaderText', $twentyseventeen_l10n );
-
-	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
-		wp_enqueue_script( 'comment-reply' );
-	}
-}
-add_action( 'wp_enqueue_scripts', 'twentyseventeen_scripts' );
-
-/**
- * Enqueues styles for the block-based editor.
- *
- * @since Twenty Seventeen 1.8
- */
-function twentyseventeen_block_editor_styles() {
-	// Block styles.
-	wp_enqueue_style( 'twentyseventeen-block-editor-style', get_theme_file_uri( '/assets/css/editor-blocks.css' ), array(), '20190328' );
-	// Add custom fonts.
-	wp_enqueue_style( 'twentyseventeen-fonts', twentyseventeen_fonts_url(), array(), null );
-}
-add_action( 'enqueue_block_editor_assets', 'twentyseventeen_block_editor_styles' );
-
-/**
- * Add custom image sizes attribute to enhance responsive image functionality
- * for content images.
- *
- * @since Twenty Seventeen 1.0
- *
- * @param string $sizes A source size value for use in a 'sizes' attribute.
- * @param array  $size  Image size. Accepts an array of width and height
- *                      values in pixels (in that order).
- * @return string A source size value for use in a content image 'sizes' attribute.
- */
-function twentyseventeen_content_image_sizes_attr( $sizes, $size ) {
-	$width = $size[0];
-
-	if ( 740 <= $width ) {
-		$sizes = '(max-width: 706px) 89vw, (max-width: 767px) 82vw, 740px';
-	}
-
-	if ( is_active_sidebar( 'sidebar-1' ) || is_archive() || is_search() || is_home() || is_page() ) {
-		if ( ! ( is_page() && 'one-column' === get_theme_mod( 'page_options' ) ) && 767 <= $width ) {
-			$sizes = '(max-width: 767px) 89vw, (max-width: 1000px) 54vw, (max-width: 1071px) 543px, 580px';
-		}
-	}
-
-	return $sizes;
-}
-add_filter( 'wp_calculate_image_sizes', 'twentyseventeen_content_image_sizes_attr', 10, 2 );
-
-/**
- * Filter the `sizes` value in the header image markup.
- *
- * @since Twenty Seventeen 1.0
- *
- * @param string $html   The HTML image tag markup being filtered.
- * @param object $header The custom header object returned by 'get_custom_header()'.
- * @param array  $attr   Array of the attributes for the image tag.
- * @return string The filtered header image HTML.
- */
-function twentyseventeen_header_image_tag( $html, $header, $attr ) {
-	if ( isset( $attr['sizes'] ) ) {
-		$html = str_replace( $attr['sizes'], '100vw', $html );
-	}
-	return $html;
-}
-add_filter( 'get_header_image_tag', 'twentyseventeen_header_image_tag', 10, 3 );
-
-/**
- * Add custom image sizes attribute to enhance responsive image functionality
- * for post thumbnails.
- *
- * @since Twenty Seventeen 1.0
- *
- * @param array $attr       Attributes for the image markup.
- * @param int   $attachment Image attachment ID.
- * @param array $size       Registered image size or flat array of height and width dimensions.
- * @return array The filtered attributes for the image markup.
- */
-function twentyseventeen_post_thumbnail_sizes_attr( $attr, $attachment, $size ) {
-	if ( is_archive() || is_search() || is_home() ) {
-		$attr['sizes'] = '(max-width: 767px) 89vw, (max-width: 1000px) 54vw, (max-width: 1071px) 543px, 580px';
-	} else {
-		$attr['sizes'] = '100vw';
-	}
-
-	return $attr;
-}
-add_filter( 'wp_get_attachment_image_attributes', 'twentyseventeen_post_thumbnail_sizes_attr', 10, 3 );
+add_action( 'widgets_init', 'burundi_widgets_init' );
 
 /**
  * Use front-page.php when Front page displays is set to a static page.
  *
- * @since Twenty Seventeen 1.0
+ * @since Isoko 1.0
  *
  * @param string $template front-page.php.
  *
  * @return string The template to be used: blank if is_home() is true (defaults to index.php), else $template.
  */
-function twentyseventeen_front_page_template( $template ) {
-	return is_home() ? '' : $template;
+function isoko_front_page_template( $template ) {
+  return is_home() ? '' : $template;
 }
-add_filter( 'frontpage_template', 'twentyseventeen_front_page_template' );
-
-/**
- * Modifies tag cloud widget arguments to display all tags in the same font size
- * and use list format for better accessibility.
- *
- * @since Twenty Seventeen 1.4
- *
- * @param array $args Arguments for tag cloud widget.
- * @return array The filtered arguments for tag cloud widget.
- */
-function twentyseventeen_widget_tag_cloud_args( $args ) {
-	$args['largest']  = 1;
-	$args['smallest'] = 1;
-	$args['unit']     = 'em';
-	$args['format']   = 'list';
-
-	return $args;
-}
-add_filter( 'widget_tag_cloud_args', 'twentyseventeen_widget_tag_cloud_args' );
-
-/**
- * Get unique ID.
- *
- * This is a PHP implementation of Underscore's uniqueId method. A static variable
- * contains an integer that is incremented with each call. This number is returned
- * with the optional prefix. As such the returned value is not universally unique,
- * but it is unique across the life of the PHP process.
- *
- * @since Twenty Seventeen 2.0
- * @see wp_unique_id() Themes requiring WordPress 5.0.3 and greater should use this instead.
- *
- * @staticvar int $id_counter
- *
- * @param string $prefix Prefix for the returned ID.
- * @return string Unique ID.
- */
-function twentyseventeen_unique_id( $prefix = '' ) {
-	static $id_counter = 0;
-	if ( function_exists( 'wp_unique_id' ) ) {
-		return wp_unique_id( $prefix );
-	}
-	return $prefix . (string) ++$id_counter;
-}
+add_filter( 'frontpage_template',  'isoko_front_page_template' );
 
 /**
  * Implement the Custom Header feature.
@@ -664,33 +185,435 @@ require get_parent_theme_file_path( '/inc/customizer.php' );
  * SVG icons functions and filters.
  */
 require get_parent_theme_file_path( '/inc/icon-functions.php' );
-/// custom ajax
 
+/*
+* Hide Dashboard options in front end like Dashboad, Edit page etc
+*
+*/
+show_admin_bar( false );
+
+/*
+* Remove unnecessary meta-data from site
+*
+*/
+remove_action( 'wp_head', 'wp_generator' ); 
+remove_action( 'wp_head', 'wlwmanifest_link' ); 
+remove_action( 'wp_head', 'rsd_link' );
+
+/*
+* Disable HTML in WordPress comments
+*
+*/
+add_filter( 'pre_comment_content', 'wp_specialchars' );
+
+/*
+* hide all update realted notifications
+* @ hide_update_notice_to_all_but_admin_users is the function name 
+*
+*/
+function hide_update_notice_to_all_but_admin_users()
+{
+    if (!current_user_can('update_core')) {
+        remove_action( 'admin_notices', 'update_nag', 3 );
+    }
+}
+add_action( 'admin_head', 'hide_update_notice_to_all_but_admin_users', 1 );
+
+/*
+* Addon to remove the Editor menu from the dashboard so that users 
+* @ remove_editor_menu is the function name 
+*
+*/
+function remove_editor_menu() {
+  remove_action('admin_menu', '_add_themes_utility_last', 101);
+}
+add_action('_admin_menu', 'remove_editor_menu', 1);
+
+ /**
+ *Register menu  option in backend 
+ *@param Header Menu name of menu
+ *@param primary menu for location of menu
+ */
+ register_nav_menu('Header Menu', 'primary menu');
+ 
+  /**
+  * Load dynamic menu (navigation) in footer section
+  *@param Footer Menu Name of menu
+  *@param footer location for menu
+  */
+ register_nav_menus(  array('footer' => __( 'Footer Menu', 'iskos' ),));
+
+/*
+* Change the default error messages
+* @chng_default_error_msg is the function name
+* @return pass error msg that you want to display
+*
+*/
+function chng_default_error_msg(){ 
+  return 'Username Or Password Is Invalid!!';
+}
+add_filter( 'login_errors', 'chng_default_error_msg' );
+
+
+/*
+* Auto logout after specific session if any user is idle on backend
+*
+*/
+function wpdev_login_session( $expire ) {
+// Set login session limit in seconds
+return 1200; 
+}
+//add_filter ( 'auth_cookie_expiration', 'wpdev_login_session' );
+
+/*
+* Change the login Form logo Url
+*
+*/
+add_filter( 'login_headerurl', 'custom_loginlogo_url' );
+function custom_loginlogo_url($url) {
+    return home_url();
+} 
+
+/*
+* Change the Default Logo on login page
+*
+*/
+function custom_loginlogo() {
+echo '<style type="text/css">
+h1 a {background-image: url('.get_bloginfo('template_directory').'/images/brand-logo.png) !important; 
+height:auto!important;}
+</style>';
+}
+add_action('login_head', 'custom_loginlogo');
+
+
+/* 
+* To change the default placeholder for Procedure Page 
+*
+*/
+function wpb_change_title_text( $title ){
+    $screen = get_current_screen();
+    if('procedures' == $screen->post_type ){
+        $title = 'Saisir le nom de la procédure ';
+    }
+    return $title;
+}
+add_filter( 'enter_title_here', 'wpb_change_title_text' );
+
+
+/*
+* Disallow procedure with same name/title of the procedure
+* If post created with the same name it will automatically moves in the draft section of the procedure
+* When title of the procedure will match to the exsting published posts it threws the error in alert box
+*
+*/
+function disallow_posts_with_same_title($messages) {
+    global $post;
+    global $wpdb ;
+    $title = $post->post_title;
+    $post_id = $post->ID ;
+    $wtitlequery = "SELECT post_title FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = 'procedures' AND post_title = '{$title}' AND ID != {$post_id} " ;
+ 
+    $wresults = $wpdb->get_results( $wtitlequery) ;
+  
+    if ( isset($wresults[0]) && !empty( $wresults[0]->post_title != '' ) ) {
+        $error_message = _e("Ce titre est déjà utilisé. Merci d'en choisir un autre", "error-msg");
+        add_settings_error('post_has_links', '', $error_message, 'error');
+        settings_errors( 'post_has_links' );
+        $post->post_status = 'draft';
+        wp_update_post($post);
+        return;
+    }
+    return $messages;
+}
+add_action('post_updated_messages', 'disallow_posts_with_same_title');
+
+/*
+* Register the taxonomy capabilities for different type of taxonomies of the custom post type
+* services_gestionnaires is the capability type of Procedure that reflect on the user capabilties setting page 
+* thématique is the capability type of Procedure that reflect on the user capabilties setting page 
+* usertype is the capability type of Procedure that reflect on the user capabilties setting page 
+* provinces_cat is the capability type of Provinces that reflect on the user capabilties setting page 
+*
+*/
+
+function cptui_register_my_taxes( $args, $taxonomy_slug ) {
+	//echo $taxonomy_slug."nayak";
+	if ( 'ministries' === $taxonomy_slug ) {
+		$args['capabilities'] = array(
+			'manage_terms' => 'manage_services_gestionnaires',
+			'edit_terms'   => 'edit_services_gestionnaires',
+			'delete_terms' => 'delete_services_gestionnaires',
+			'assign_terms' => 'assign_services_gestionnaires',
+		);
+	}
+
+	if ( 'provinces_cat' === $taxonomy_slug ) {
+		$args['capabilities'] = array(
+			'manage_terms' => 'manage_provinces_cat',
+			'edit_terms'   => 'edit_provinces_cat',
+			'delete_terms' => 'delete_provinces_cat',
+			'assign_terms' => 'assign_provinces_cat',
+		);
+	}
+
+  if ( 'bob_management_category' === $taxonomy_slug ) {
+    $args['capabilities'] = array(
+      'manage_terms' => 'manage_bob_management_category',
+      'edit_terms'   => 'edit_bob_management_category',
+      'delete_terms' => 'delete_bob_management_category',
+      'assign_terms' => 'assign_bob_management_category',
+    );
+  }
+	
+if ( 'jurisprudence_type' === $taxonomy_slug ) {
+    $args['capabilities'] = array(
+      'manage_terms' => 'manage_jurisprudence_type',
+      'edit_terms'   => 'edit_jurisprudence_type',
+      'delete_terms' => 'delete_jurisprudence_type',
+      'assign_terms' => 'assign_jurisprudence_type',
+    );
+  }
+
+  if ('treatments_type' === $taxonomy_slug ) {
+    $args['capabilities'] = array(
+      'manage_terms' => 'manage_treatments_type',
+      'edit_terms'   => 'edit_treatments_type',
+      'delete_terms' => 'delete_treatments_type',
+      'assign_terms' => 'assign_treatments_type',
+    );
+  }
+  
+  
+	if ( 'glossary_type' === $taxonomy_slug ) {
+		$args['capabilities'] = array(
+			'manage_terms' => 'manage_glossary_type',
+			'edit_terms'   => 'edit_glossary_type',
+			'delete_terms' => 'delete_glossary_type',
+			'assign_terms' => 'assign_glossary_type',
+		);
+	}
+	if ( 'usertype' === $taxonomy_slug ) {
+		$args['capabilities'] = array(
+			'manage_terms' => 'manage_usertype',
+			'edit_terms'   => 'edit_usertype',
+			'delete_terms' => 'delete_usertype',
+			'assign_terms' => 'assign_usertype',
+		);
+	}
+
+	return $args;
+}
+add_filter( 'cptui_pre_register_taxonomy', 'cptui_register_my_taxes', 10, 2 );
+
+flush_rewrite_rules();
+
+/*add_action('admin_menu', 'my_menu_pages');
+function my_menu_pages(){
+    add_menu_page('Category Management', 'Category Management', 'manage_options', 'category_mnagemnt', 'category_mnagemnt' );
+    
+}
+
+function category_mnagemnt()
+{
+
+  include("category_managent.php");
+}*/
+
+//
+function menu_item_text( $menu ) {
+     $menu = str_ireplace( 'Dashboard', 'Home', $menu );
+     //$menu = str_ireplace( 'Posts', 'Articles', $menu );
+     $menu = str_ireplace( 'Users', 'Users Management', $menu );
+     $menu = str_ireplace( 'All Terms', 'All Glossary', $menu );
+     $menu = str_ireplace( 'Add New Term', 'Add New Glossary', $menu );
+   // $menu1 = str_ireplace( 'All Jurisprudence', 'Jurisprudence Management', $menu1);
+      //$menu = str_ireplace( 'BOB', 'BOB Management', $menu );
+     return $menu;
+}
+add_filter('gettext', 'menu_item_text');
+add_filter('ngettext', 'menu_item_text');
+
+///
+
+
+/**
+
+function cptui_register_my_taxes_bob_management_category() {
+
+  $labels = array(
+    "name" => __( "BOB Management Category", "avalon" ),
+    "singular_name" => __( "BOB Management Category", "avalon" ),
+    "all_items" => __( "BOB Management Category", "avalon" ),
+    "add_new_item" => __( "BOB Management Category", "avalon" ),
+  );
+
+  $args = array(
+    "label" => __( "BOB Management Category", "avalon" ),
+    "labels" => $labels,
+    "public" => true,
+    "hierarchical" => true,
+    "label" => "BOB Management Category",
+    "show_ui" => true,
+    "show_in_menu" => true,
+    "show_in_nav_menus" => true,
+    "query_var" => true,
+    "rewrite" => array( 'slug' => 'bob_management_category', 'with_front' => true,  'hierarchical' => true, ),
+    "show_admin_column" => false,
+    "show_in_rest" => false,
+    "rest_base" => "bob_management_category",
+    "show_in_quick_edit" => false,
+  );
+  register_taxonomy( "bob_management_category", array( "bob" ), $args );
+}
+
+add_action( 'init', 'cptui_register_my_taxes_bob_management_category' );
+
+ */
+
+/*function alphaindex_save_alpha( $post_id ) {
+  if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
+  return;
+  //only run for songs
+  $slug = 'bob';
+  $letter = '';
+  // If this isn't a 'song' post, don't update it.
+  if ( isset( $_POST['post_type'] ) && ( $slug != $_POST['post_type'] ) )
+  return;
+  // Check permissions
+  if ( !current_user_can( 'edit_post', $post_id ) )
+  return;
+  // OK, we're authenticated: we need to find and save the data
+  $taxonomy = 'branche_droit';
+  if ( isset( $_POST['post_type'] ) ) {
+    // Get the title of the post
+    $title = strtolower( $_POST['post_title'] );
+    
+    // The next few lines remove A, An, or The from the start of the title
+    $splitTitle = explode(" ", $title);
+    $blacklist = array("an","a","the");
+    $splitTitle[0] = str_replace($blacklist,"",strtolower($splitTitle[0]));
+    $title = implode("", $splitTitle);
+    
+    // Get the first letter of the title
+    $letter = substr( $title, 0, 1 );
+    
+    // Set to 0-9 if it's a number
+    if ( is_numeric( $letter ) ) {
+      $letter = '0-9';
+    }
+  }
+  //set term as first letter of post title, lower case
+  wp_set_post_terms( $post_id, $letter, $taxonomy );
+}
+add_action( 'save_post', 'alphaindex_save_alpha' );*/
+
+
+function pagination_bar( $query_wp ) 
+{
+    $pages = $query_wp->max_num_pages;
+    $big = 999999999; // need an unlikely integer
+    if ($pages > 1)
+    {
+        $page_current = max(1, get_query_var('paged'));
+        echo paginate_links(array(
+            'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+            'format' => '?paged=%#%',
+            'current' => $page_current,
+            'total' => $pages,
+        ));
+    }
+
+ 
+}
+/* functions.php */
+add_action( 'wp_ajax_link_check_click_counter', 'link_check_click_counter');
+add_action( 'wp_ajax_nopriv_link_check_click_counter', 'link_check_click_counter' );
+function link_check_click_counter() {
+
+    if ( isset( $_POST['nonce'] ) &&  isset( $_POST['post_id'] ) && wp_verify_nonce( $_POST['nonce'], 'link_check_click_counter_' . $_POST['post_id'] ) ) {
+        $count = get_post_meta( $_POST['post_id'], 'link_check_click_counter', true );
+        update_post_meta( $_POST['post_id'], 'link_check_click_counter', ( $count === '' ? 1 : $count + 1 ) );
+    }
+    exit();
+}
+
+
+add_action( 'wp_footer', 'link_click' );
+//add_action( 'wp_head', 'link_click' );
+function link_click() {
+    global $post;
+
+    if( isset( $post->ID ) ) {
+?>
+    <script type="text/javascript" >
+    jQuery(function ($) {
+        var ajax_options = {
+            action: 'link_check_click_counter',
+            nonce: '<?php echo wp_create_nonce( 'link_check_click_counter_' . $post->ID ); ?>',
+            ajaxurl: '<?php echo admin_url( 'admin-ajax.php' ); ?>',
+            post_id: '<?php echo $post->ID; ?>'
+        };
+
+        $( '#link_count a' ).on( 'click', function() {
+            var href = $( this ).attr( "href" );
+            var redirectWindow = window.open(href, '_blank');   
+            $.post( ajax_options.ajaxurl, ajax_options, function() {
+                redirectWindow.location;
+            });
+            return false;
+        });
+    });
+    </script>
+<?php
+    }
+}
+function link_check_meta_values( $key = '', $type = 'bob', $status = 'publish' ) {
+    global $wpdb;
+    if( empty( $key ) )
+        return;
+    $r = $wpdb->get_col( $wpdb->prepare( "
+        SELECT pm.meta_value FROM {$wpdb->postmeta} pm
+        LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+        WHERE pm.meta_key = '%s'
+        AND p.post_status = '%s'
+        AND p.post_type = '%s'
+    ", $key, $status, $type ) );
+
+    return $r;
+}
+//remove_action('media_buttons', 'media_buttons');
+
+
+
+$url = get_the_permalink();
+
+$wpml_permalink = apply_filters( 'wpml_permalink', $url , 'fr' ); 
+
+///
+
+/// custom ajax
 add_action('wp_ajax_data_fetch' , 'data_fetch');
 add_action('wp_ajax_nopriv_data_fetch','data_fetch');
 function data_fetch(){
-
-$id = $_POST['country'];
-$sql =  get_terms( 'category', array(
+$id = $_POST['ofbranche_droit'];
+$sql =  get_terms( 'division_du_droit', array(
         //'hide_empty' => 0,
         'parent' =>$id
     ));
-print_r($sql);
-
+//print_r($sql);
 foreach($sql as $row)
 {
 $id = $row->term_id;
-//$data = $row->name;
-echo '<option value="'.$id.'">'.$id.'</option>';
+$data = $row->name;
+echo '<option value="'.$id.'">'.$data.'</option>';
  } 
+  ?>
 
-
-	?>
-
-	
+  
 
                  
-	
+  
   <?php  die();
 }
 // add the ajax fetch js
@@ -699,45 +622,395 @@ function ajax_fetch() {
 ?>
 <script type="text/javascript">
 /*function fetchResults(){
-	var keyword = jQuery('#searchInput').val();
-	if(keyword == ""){
-		jQuery('#datafetch').html("");
-	} else {
-		jQuery.ajax({
-			url: '<?php //echo admin_url('admin-ajax.php'); ?>',
-			type: 'post',
-			data: { action: 'data_fetch', keyword: keyword  },
-			success: function(data) {
-				jQuery('#datafetch').html( data );
-			}
-		});
-	}
+  var keyword = jQuery('#searchInput').val();
+  if(keyword == ""){
+    jQuery('#datafetch').html("");
+  } else {
+    jQuery.ajax({
+      url: '<?php //echo admin_url('admin-ajax.php'); ?>',
+      type: 'post',
+      data: { action: 'data_fetch', keyword: keyword  },
+      success: function(data) {
+        jQuery('#datafetch').html( data );
+      }
+    });
+  }
     
 }*/
 //test
-
 function fetchResults1(){
-	var country = jQuery('#country').val();
-	alert(country);
-	if(country == ""){
-		jQuery('#datafetch').html("");
-	} else {
-		jQuery.ajax({
-			url: '<?php echo admin_url('admin-ajax.php'); ?>',
-			type: 'post',
-			data: { action: 'data_fetch', country: country  },
-			success: function(data) {
-				//jQuery('#datafetch').html( data );
-				jQuery(".city").html(data);
-			}
-		});
-	}
+  var ofbranche_droit = jQuery('#ofbranche_droit').val();
+  //alert(ofbranche_droit);
+  if(ofbranche_droit == ""){
+    jQuery('#datafetch').html("");
+  } else {
+    jQuery.ajax({
+      url: '<?php echo admin_url('admin-ajax.php'); ?>',
+      type: 'post',
+      data: { action: 'data_fetch', ofbranche_droit: ofbranche_droit  },
+      success: function(data) {
+        //jQuery('#datafetch').html( data );
+        jQuery(".ofcategorie").html(data);
+      }
+    });
+  }
     
 }
+
+//
+
+
+</script>
+
+<?php
+}
+
+//other 2
+
+/// custom ajax
+add_action('wp_ajax_data_fetch_other' , 'data_fetch_other');
+add_action('wp_ajax_nopriv_data_fetch_other','data_fetch_other');
+function data_fetch_other(){
+$id = $_POST['ofcategorie'];
+$sql =  get_terms( 'division_du_droit', array(
+        //'hide_empty' => 0,
+        'parent' =>$id
+    ));
+//rint_r($sql);
+foreach($sql as $row)
+{
+$id = $row->term_id;
+$data = $row->name;
+echo '<option value="'.$id.'">'.$data.'</option>';
+ } 
+  ?>
+     
+  
+  <?php  die();
+}
+// add the ajax fetch js
+add_action( 'wp_footer', 'ajax_fetch_other' );
+function ajax_fetch_other() {
+?>
+<script type="text/javascript">
+/*function fetchResults(){
+  var keyword = jQuery('#searchInput').val();
+  if(keyword == ""){
+    jQuery('#datafetch').html("");
+  } else {
+    jQuery.ajax({
+      url: '<?php //echo admin_url('admin-ajax.php'); ?>',
+      type: 'post',
+      data: { action: 'data_fetch', keyword: keyword  },
+      success: function(data) {
+        jQuery('#datafetch').html( data );
+      }
+    });
+  }
+    
+}*/
+//test
+function fetchResults_ofcategorie(){
+  var ofcategorie = jQuery('#ofcategorie').val();
+  //alert(ofcategorie);
+  if(ofcategorie == ""){
+    jQuery('#datafetch').html("");
+  } else {
+    jQuery.ajax({
+      url: '<?php echo admin_url('admin-ajax.php'); ?>',
+      type: 'post',
+      data: { action: 'data_fetch_other', ofcategorie: ofcategorie  },
+      success: function(data) {
+        //jQuery('#datafetch').html( data );
+        jQuery(".ofjuridiction").html(data);
+      }
+    });
+  }
+    
+}
+
+//
+
+
 </script>
 
 <?php
 }
 
 
+/// date filter dependacy
 
+
+
+
+
+add_action('wp_ajax_data_fetch_other_bob_date' , 'data_fetch_other_bob_date');
+add_action('wp_ajax_nopriv_data_fetch_other_bob_date','data_fetch_other_bob_date');
+function data_fetch_other_bob_date(){
+$id1 = $_POST['date_bob1'];
+//$added = array();
+?>
+
+<?php
+$args = array(
+  
+  'post_type'   => 'bob',
+  'meta_key'    => 'date_bob',
+  'meta_value'  => $id1
+);
+
+
+// query
+$the_query = new WP_Query( $args );
+ 
+  ?>
+
+   <?php if( $the_query->have_posts() ): ?>
+<?php while( $the_query->have_posts() ) : $the_query->the_post(); ?>
+
+  <option value="<?php the_title(); ?>"><?php the_title(); ?></option>
+ 
+  <?php endwhile; // end of the loop. ?>
+    <?php wp_reset_query(); ?>
+    <?php else: ?>
+    No results found.
+    <?php endif; ?>
+                 
+  
+  <?php  die();
+}
+// add the ajax fetch js
+add_action( 'wp_footer', 'ajax_fetch_other_bob_date' );
+function ajax_fetch_other_bob_date() {
+?>
+<script type="text/javascript">
+function fetchResults_bob_date(){
+  var date_bob1 = jQuery('#date_bo1').val();
+  //alert(date_bob1);
+  if(date_bob1 == ""){
+    jQuery('#datafetch').html("");
+  } else {
+    jQuery.ajax({
+      url: '<?php echo admin_url('admin-ajax.php'); ?>',
+      type: 'post',
+      data: { action: 'data_fetch_other_bob_date', date_bob1: date_bob1  },
+      success: function(data) {
+        //jQuery('#datafetch').html( data );
+        jQuery(".numberbobdrop").html(data);
+      }
+    });
+  }
+    
+}
+
+
+</script>
+
+<?php
+}
+
+//custom functions for admin layout design
+
+add_action( 'in_admin_header', 'insert_header_wpse_51023' );
+add_action( 'admin_footer', 'insert_footer_wpse_51023' );
+add_filter( 'admin_print_styles', 'footer_hide_wpse_51023' );
+
+function insert_header_wpse_51023()
+{
+    echo '<div style="width:100%"><header class="myHeader" id="wpAdminHeader">
+  <div class="bottomHeader">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-lg-3 p-0">
+              <div class="bottomHeaderLeft">
+                <figure class="p-0 m-0 img-fluid">
+                   
+                      
+                         <a href="http://burundi/en">
+                    <img class="img-fluid" src="http://burundi.dataforall.org/wp-content/themes/burundi_new/images/flag.jpg" alt="burundi logo"></a>
+                 <a href="http://burundi/en">  <img class="img-fluid" src="http://burundi.dataforall.org/wp-content/themes/burundi_new/images/unite-travail-progress-logo.jpg" alt="burundi logo"></a>
+
+                       
+                  
+
+
+                </figure>
+              </div>
+            </div>
+            <div class="col-lg-6 p-0">
+              <div class="bottomHeaderMiddle">
+                <h3 class="greenColor">mémoire du droit burundais</h3>
+              </div>
+            </div>
+            <div class="col-lg-3 p-0">
+              <div class="bottomHeaderRight">
+                <figure class="p-0 m-0 imf-fluid">
+
+                                                <a href="http://burundi/en"> <img src="http://burundi.dataforall.org/wp-content/themes/burundi_new/images/cedj-logo.jpg" alt="burundi logos" class="img-fluid"></a>
+                   <a href="http://burundi/en"><img src="http://burundi.dataforall.org/wp-content/themes/burundi_new/images/undp-logo.jpg" alt="burundi logos" class="img-fluid"></a>
+                       
+                  
+                </figure>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></header></div>';?>
+       <style type="text/css">
+        
+        #wpAdminHeader { background: #fff; display: inline-block; width: 100%; height: 135px; position: relative; }
+         #wpAdminHeader .bottomHeader .bottomHeaderMiddle{ display: inline-block; margin: 0 auto; width: 50%; text-align: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+         #wpAdminHeader .bottomHeader .bottomHeaderLeft figure a:first-child{ position: relative; bottom: 10px; }
+ #wpAdminHeader .bottomHeader .bottomHeaderMiddle h3{ font-size: 42px; font-family: 'Fjalla One', sans-serif; text-align: center; text-transform: uppercase; margin: 0px; color: #1eb53a; }
+ #wpAdminHeader .bottomHeader .bottomHeaderLeft{ height: 100%; position: absolute; left: 0px; top: -5px; }
+ #wpAdminHeader .bottomHeader .bottomHeaderLeft img:last-child{ margin-left: 12px; }
+ #wpAdminHeader .bottomHeader .bottomHeaderRight{ text-align: right !important; position: absolute; top: 0px; right: 0px; }
+ #wpAdminHeader .bottomHeader .bottomHeaderRight img:first-child{ margin-right: 12px; }
+/*admin panel sidebars*/
+#adminmenu .wp-has-current-submenu .wp-submenu, #adminmenu .wp-has-current-submenu .wp-submenu.sub-open, #adminmenu .wp-has-current-submenu.opensub .wp-submenu, #adminmenu a.wp-has-current-submenu:focus + .wp-submenu, .no-js li.wp-has-current-submenu:hover .wp-submenu{ background-color: #d19136; color: #fff; }
+#wpAdminHeader .bottomHeader .bottomHeaderMiddle h3{ font-size: 32px; }
+#adminmenu .wp-has-current-submenu .wp-submenu .wp-submenu-head, #adminmenu .wp-menu-arrow, #adminmenu .wp-menu-arrow div, #adminmenu li.current a.menu-top, #adminmenu li.wp-has-current-submenu a.wp-has-current-submenu, .folded #adminmenu li.current.menu-top, .folded #adminmenu li.wp-has-current-submenu{ background: #9f712e; }
+#wpadminbar{ background: #1eb53a; }
+#adminmenu, #adminmenu .wp-submenu, #adminmenuback, #adminmenuwrap{ background-color: #18842c; color: #fff; }
+#adminmenu .wp-submenu a:focus, #adminmenu .wp-submenu a:hover, #adminmenu a:hover, #adminmenu li.menu-top > a:focus{ color: #fff !important; }
+#adminmenu li a:focus div.wp-menu-image::before, #adminmenu li.opensub div.wp-menu-image::before, #adminmenu li:hover div.wp-menu-image::before{ color: #fff; }
+      </style>
+
+      <?php
+}
+
+function insert_footer_wpse_51023()
+{
+    
+}
+
+function footer_hide_wpse_51023()
+{
+    echo '<style type="text/css">#wpfooter { display: none; }</style>';
+}
+
+function cc_wpse_278096_disable_admin_bar() {
+ if ( is_user_logged_in()) {
+  $current_user = wp_get_current_user();
+  $current_user_id = $current_user->ID;
+
+  //echo $_SERVER['HTTP_CLIENT_IP'];
+  $myprivateIP = gethostbyname(trim(exec("hostname")));
+  // echo $_SERVER['ip'];
+  $json = file_get_contents("https://www.geoip-db.com/json");
+  $data = json_decode($json);
+    //print $data->country_code . "<br>";
+    //print $data->country_name . "<br>";
+    //print $data->state . "<br>";
+   // print $data->city . "<br>";
+    //print $data->postal . "<br>";
+    //print $data->latitude . "<br>";
+   // print $data->longitude . "<br>";
+    //print $data->IPv4 . "<br>";
+  //echo  $_SERVER['REMOTE_ADDR']?:($_SERVER['HTTP_X_FORWARDED_FOR']?:$_SERVER['HTTP_CLIENT_IP']);
+   //print_r(exec("ifconfig en1 inet"));
+   //print_r($current_user);
+   //echo $current_user_id."Dalveer Developer";
+       if(($current_user_id=='470') && (current_user_can('administrator')) && ($data->IPv4=="119.82.74.10") && ($data->city=="New Delhi") && ($data->country_name=="India") && ($data->postal=="110001") && ($data->state=="National Capital Territory of Delhi"))  
+        {
+        ?>     
+        <?php  //exit; ?>
+         <?php }elseif($current_user_id=='471'){ ?>
+
+         <?php }elseif($current_user_id=='469'){ ?>
+
+         <?php }elseif($current_user_id=='468'){ ?>
+
+         <?php }elseif($current_user_id=='467'){ ?>
+
+         <?php }elseif($current_user_id=='466'){ ?>
+
+         <?php }elseif($current_user_id=='465'){ ?>
+
+         <?php }elseif($current_user_id=='464'){ ?>
+
+         <?php }elseif($current_user_id=='463'){ ?>
+
+      <?php}else{ ?>
+    
+     <script type="text/javascript">alert("Error in login 80 port");</script>
+    <style type="text/css"> .wp-admin{ display:none !important; }</style>
+    <?php  exit; ?>
+    <?php }
+   }
+}
+add_action('after_setup_theme', 'cc_wpse_278096_disable_admin_bar');
+
+add_filter('show_admin_bar', '__return_false');
+
+
+/**
+ * Hide admin bar from certain users
+ */
+
+function remove_menus () {
+global $menu;
+$user = wp_get_current_user();
+    
+        $restricted = array(__('Dashboard'), __('Posts'), __('Media'), __('Links'), __('Appearance'), __('Tools'), __('Users'), __('Settings'), __('Comments'),  __('Downloads'), __('FAQ'), __('Mail Bank'));
+        end ($menu);
+        while (prev($menu)){
+            $value = explode(' ',$menu[key($menu)][0]);
+            if(in_array($value[0] != NULL?$value[0]:"" , $restricted)){unset($menu[key($menu)]);}
+        }
+    }
+
+add_action('admin_menu', 'remove_menus');
+//
+
+add_filter( 'rest_authentication_errors', function( $result ) {
+    if ( ! empty( $result ) ) {
+        return $result;
+    }
+    if ( ! is_user_logged_in() ) {
+        return new WP_Error( '420', 'I think you are chor in.', array( 'status' => 420 ) );
+    }
+    return $result;
+});
+
+//
+
+function wpse_285333_remove_unfiltered_html_cap() {
+    $wp_roles = wp_roles();
+    $wp_roles->remove_cap( 'administrator', 'unfiltered_html' );
+}
+
+// This function actually only needs to run once, so you can comment this out
+// after loading the site once.
+add_action( 'init', 'wpse_285333_remove_unfiltered_html_cap', 5 );
+
+function __notify_admin_on_publish( $new_status, $old_status, $post )
+{
+    global $post;
+    if( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || $post->post_status == 'auto-draft' )
+        return;
+
+    $message = 'View it:  '.get_content($post->ID ) . get_permalink( $post->ID ) . "\nEdit it: " . get_edit_post_link( $post->ID );
+    if ( $post_type = get_post_type_object( $post->post_type ) )    
+        wp_mail('dnayak009@gmail.com', 'New ' . $post_type->labels->singular_name, $message );
+}
+add_action( 'save_post', '__notify_admin_on_publish', 10, 3 );
+//
+
+
+function change_role_name() {
+    global $wp_roles;
+
+    if ( ! isset( $wp_roles ) )
+        $wp_roles = new WP_Roles();
+
+    //You can list all currently available roles like this...
+    //$roles = $wp_roles->get_names();
+    //print_r($roles);
+
+    //You can replace "administrator" with any other role "editor", "author", "contributor" or "subscriber"...
+    $wp_roles->roles['subscriber']['name'] = 'Glossaire';
+    $wp_roles->role_names['subscriber'] = 'Glossaire';           
+}
+add_action('init', 'change_role_name');
+?>
